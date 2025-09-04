@@ -1,10 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- Lógica do Formulário de Agendamento ---
     const form = document.getElementById('agendamento-form');
     const nomeInput = document.getElementById('nome');
     const telefoneInput = document.getElementById('telefone');
-    const emailInput = document.getElementById('email');
     const horarioInput = document.getElementById('horario');
     const dataInput = document.getElementById('data');
     const profissionalInput = document.getElementById('profissional');
@@ -16,20 +14,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let servicosSelecionados = [];
     let barbeiroSelecionado = '';
 
-    // Lógica para selecionar o barbeiro
     barbeirosContainer.addEventListener('click', (event) => {
         const target = event.target.closest('.barb-img');
         if (target) {
-            // Remove a classe 'selected' de todos os barbeiros
             document.querySelectorAll('.barb-img').forEach(barb => barb.classList.remove('selected'));
-            // Adiciona a classe 'selected' ao barbeiro clicado
             target.classList.add('selected');
             barbeiroSelecionado = target.dataset.name;
             profissionalInput.value = barbeiroSelecionado;
         }
     });
 
-    // Lógica para selecionar os serviços
     servicosCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => {
             servicosSelecionados = [];
@@ -43,12 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Lógica para agendar (botão de submit)
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        // Validação básica do formulário
-        if (nomeInput.value.trim() === '' || telefoneInput.value.trim() === '' || emailInput.value.trim() === '') {
+        if (nomeInput.value.trim() === '' || telefoneInput.value.trim() === '' || horarioInput.value.trim() === '' || dataInput.value.trim() === '') {
             agendamentoMessage.textContent = 'Por favor, preencha todos os campos obrigatórios.';
             agendamentoMessage.style.color = '#dc3545';
             return;
@@ -65,30 +57,34 @@ document.addEventListener('DOMContentLoaded', () => {
             agendamentoMessage.style.color = '#dc3545';
             return;
         }
-        
-        if (dataInput.value.trim() === '') {
-            agendamentoMessage.textContent = 'Por favor, selecione uma data no calendário.';
-            agendamentoMessage.style.color = '#dc3545';
-            return;
-        }
 
-        // Simulação de agendamento bem-sucedido
-        agendamentoMessage.textContent = 'Agendamento realizado com sucesso! Em breve entraremos em contato.';
+        const nome = nomeInput.value;
+        const telefone = telefoneInput.value;
+        const data = dataInput.value;
+        const horario = horarioInput.value;
+        const profissional = profissionalInput.value;
+        const servicos = servicoInput.value;
+
+        const mensagem = `Olá, gostaria de agendar um horário.%0A%0A*Detalhes do Agendamento:*%0A*Nome:* ${nome}%0A*Telefone:* ${telefone}%0A*Data:* ${data}%0A*Horário:* ${horario}%0A*Profissional:* ${profissional}%0A*Serviço(s):* ${servicos}`;
+
+        const whatsappURL = `https://api.whatsapp.com/send?phone=5551985330121&text=${mensagem}`;
+
+        window.open(whatsappURL, '_blank');
+
+        agendamentoMessage.textContent = 'Redirecionando para o WhatsApp...';
         agendamentoMessage.style.color = '#28a745';
-
-        // Limpa o formulário após o envio
+        
         form.reset();
         servicosSelecionados = [];
         barbeiroSelecionado = '';
         servicoInput.value = '';
         profissionalInput.value = '';
-        document.querySelectorAll('.barb-img').forEach(barb => barb.classList.remove('selected'));
-        // Limpa a seleção do calendário
+        document.querySelectorAll('.barb-img').forEach(barb => barbeiro.classList.remove('selected'));
         document.querySelectorAll('.day.selected').forEach(day => day.classList.remove('selected'));
         dataInput.value = '';
+
     });
 
-    // Lógica do botão Limpar
     form.addEventListener('reset', () => {
         setTimeout(() => {
             servicosSelecionados = [];
@@ -97,13 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
             profissionalInput.value = '';
             agendamentoMessage.textContent = '';
             document.querySelectorAll('.barb-img').forEach(barb => barb.classList.remove('selected'));
-            // Limpa a seleção do calendário
             document.querySelectorAll('.day.selected').forEach(day => day.classList.remove('selected'));
             dataInput.value = '';
         }, 0);
     });
 
-    // --- Lógica do Calendário ---
     const calendarDays = document.getElementById('calendar-days');
     const currentMonthEl = document.getElementById('current-month');
     const prevMonthBtn = document.getElementById('prev-month');
@@ -122,40 +116,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstDayOfMonth = new Date(year, month, 1).getDay();
         const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
 
-        // Adiciona dias vazios para preencher a primeira semana
         for (let i = 0; i < firstDayOfMonth; i++) {
             const emptyDay = document.createElement('div');
             emptyDay.classList.add('day', 'empty');
             calendarDays.appendChild(emptyDay);
         }
 
-        // Adiciona os dias do mês
         for (let day = 1; day <= lastDayOfMonth; day++) {
             const dayEl = document.createElement('div');
             dayEl.classList.add('day');
             dayEl.textContent = day;
             dayEl.dataset.day = day;
 
-            // Marca o dia de hoje
             const today = new Date();
             if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
                 dayEl.classList.add('today');
             }
 
-            // Marca o dia selecionado
             if (selectedDate && year === selectedDate.getFullYear() && month === selectedDate.getMonth() && day === selectedDate.getDate()) {
                 dayEl.classList.add('selected');
             }
 
             dayEl.addEventListener('click', () => {
-                // Remove a seleção anterior
                 document.querySelectorAll('.day.selected').forEach(d => d.classList.remove('selected'));
-                // Adiciona a nova seleção
                 dayEl.classList.add('selected');
-                // Salva a data selecionada
                 selectedDate = new Date(year, month, day);
-                // Formata a data para o input (AAAA-MM-DD)
-                const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const formattedDate = `${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year}`;
                 dataInput.value = formattedDate;
             });
 
