@@ -683,6 +683,17 @@ footer {
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         padding: 0;
     }
+    .side-menu.open {
+        right: 0;
+        top: 0;
+        width: 100vw;
+        height: 50px;
+        opacity: 1;
+        pointer-events: auto;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
     .side-menu ul {
         flex-direction: row;
         gap: 0;
