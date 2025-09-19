@@ -671,6 +671,8 @@ footer {
 
 /* Para telas muito pequenas, menu lateral ocupa só o topo */
 @media (max-width: 400px) {
+    /* Remova ou comente tudo abaixo para manter o menu na lateral direita */
+    /*
     .side-menu {
         top: 0;
         right: 0;
@@ -704,6 +706,17 @@ footer {
     .side-menu a {
         padding: 0 8px;
         font-size: 1.2em;
+    }
+    */
+    /* Mantenha apenas ajustes do botão de abrir menu se quiser */
+    #side-menu-handle {
+        top: 60px;
+        width: 32px;
+        height: 70px;
+        font-size: 0.9em;
+    }
+    .menu-text {
+        font-size: 0.8em;
     }
 }
 
