@@ -381,19 +381,24 @@ footer {
     border-radius: 50%;
     width: 38px;
     height: 38px;
-    aspect-ratio: 1/1; /* Garante que sempre será um círculo */
-    font-size: 1.3em;
+    aspect-ratio: 1/1;
+    font-size: 1.5em;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.3s;
+    padding: 0; /* Remover padding extra */
     margin-bottom: 0;
+    transition: background 0.3s;
 }
 
-#back-to-top:hover {
-    background: var(--dourado-medio);
+#back-to-top svg, #back-to-top i {
+    width: 60%;
+    height: 60%;
+    display: block;
+    margin: 0 auto;
+    color: inherit;
 }
 
 @media (max-width: 900px) {
