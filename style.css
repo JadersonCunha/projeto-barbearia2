@@ -392,6 +392,29 @@ footer {
     background: var(--dourado-medio);
 }
 
+/* Garante que o botão de voltar ao topo fique sempre redondo */
+@media (max-width: 900px) {
+    #back-to-top {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+    }
+}
+@media (max-width: 600px) {
+    #back-to-top {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+    }
+}
+@media (max-width: 400px) {
+    #back-to-top {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+    }
+}
+
 /* Modal área do cliente */
 #cliente-link {
     display: block;
