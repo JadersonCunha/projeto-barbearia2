@@ -92,6 +92,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Verifica se é sábado e horário é após 18h
+        const agendamentoDate = new Date(data + 'T' + horario);
+        if (agendamentoDate.getDay() === 6 && parseInt(horario.split(':')[0]) >= 18) {
+            agendamentoMessage.textContent = 'Em sábados, só é permitido agendar até as 18h!';
+            agendamentoMessage.style.color = '#dc3545';
+            return;
+        }
+
         // Salvar agendamento localmente ANTES do reset
         agendamentos.push({
             telefone: telefone,
@@ -152,10 +160,23 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 1; i <= daysInMonth; i++) {
             const dayDate = new Date(year, month, i);
             const isPast = dayDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const isSaturday = dayDate.getDay() === 6;
+            let isSaturdayAfter18 = false;
+            if (isSaturday && dayDate >= today) {
+                // Verifica se hoje é sábado e já passou das 18h
+                if (
+                    dayDate.getFullYear() === today.getFullYear() &&
+                    dayDate.getMonth() === today.getMonth() &&
+                    dayDate.getDate() === today.getDate() &&
+                    today.getHours() >= 18
+                ) {
+                    isSaturdayAfter18 = true;
+                }
+            }
             const dayDiv = document.createElement('div');
             dayDiv.classList.add('day');
             dayDiv.textContent = i;
-            if (isPast) {
+            if (isPast || isSaturdayAfter18) {
                 dayDiv.classList.add('empty');
                 dayDiv.style.background = '#333';
                 dayDiv.style.color = '#888';
@@ -320,6 +341,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         agendamentos[i].servicos = servicosArr.join(', ');
                     }
                     alterado = true;
+
+                    // Envia mensagem para o barbeiro via WhatsApp
+                    const mensagemCancelamento = `Olá ${profissional}, o cliente ${agendamentos[i].nome} cancelou o serviço: ${servico} no dia ${data} às ${horario}.`;
+                    const whatsappBarbeiro = `https://api.whatsapp.com/send?phone=5551985330121&text=${encodeURIComponent(mensagemCancelamento)}`;
+                    window.open(whatsappBarbeiro, '_blank');
                 }
             }
         });
