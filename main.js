@@ -151,6 +151,13 @@ document.addEventListener('DOMContentLoaded', () => {
             "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
         ];
+        const feriados = [
+            // Formato: 'YYYY-MM-DD'
+            '2025-01-01', // Exemplo: Ano Novo
+            '2025-04-21', // Exemplo: Tiradentes
+            '2025-05-01', // Exemplo: Dia do Trabalho
+            // Adicione outros feriados aqui
+        ];
         const month = currentDate.getMonth();
         const year = currentDate.getFullYear();
         currentMonthEl.textContent = `${monthNames[month]} ${year}`;
@@ -160,23 +167,25 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 1; i <= daysInMonth; i++) {
             const dayDate = new Date(year, month, i);
             const isPast = dayDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const isSunday = dayDate.getDay() === 0;
+            const dateStr = `${year}-${(month+1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
+            const isFeriado = feriados.includes(dateStr);
             const isSaturday = dayDate.getDay() === 6;
             let isSaturdayAfter18 = false;
-            if (isSaturday && dayDate >= today) {
-                // Verifica se hoje é sábado e já passou das 18h
-                if (
-                    dayDate.getFullYear() === today.getFullYear() &&
-                    dayDate.getMonth() === today.getMonth() &&
-                    dayDate.getDate() === today.getDate() &&
-                    today.getHours() >= 18
-                ) {
-                    isSaturdayAfter18 = true;
-                }
+            // Só bloqueia o sábado do dia atual após as 18h
+            if (
+                isSaturday &&
+                dayDate.getFullYear() === today.getFullYear() &&
+                dayDate.getMonth() === today.getMonth() &&
+                dayDate.getDate() === today.getDate() &&
+                today.getHours() >= 18
+            ) {
+                isSaturdayAfter18 = true;
             }
             const dayDiv = document.createElement('div');
             dayDiv.classList.add('day');
             dayDiv.textContent = i;
-            if (isPast || isSaturdayAfter18) {
+            if (isPast || isSunday || isFeriado || isSaturdayAfter18) {
                 dayDiv.classList.add('empty');
                 dayDiv.style.background = '#333';
                 dayDiv.style.color = '#888';
