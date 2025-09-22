@@ -16,7 +16,6 @@
 }
 
 body {
-    
     margin: 0;
     padding: 0;
     background-color: var(--dark-background);
@@ -30,50 +29,11 @@ body {
     padding: 20px;
 }
 
-.whatsapp-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    transition: transform 0.3s ease;
-    text-decoration: none;
-}
-
-.whatsapp-button img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 5px;
-}
-
-.whatsapp-button:hover {
-    transform: scale(1.1);
-}
-
-.tooltip {
-    visibility: hidden;
-    background-color: var(--dark-text);
-    color: var(--dark-background);
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 10px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -60px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-
-
 header {
     text-align: center;
     padding: 25px 20px;
     background-color: var(--dark-background);
-    color: var(--dark-text); 
+    color: var(--dark-text);
     background-size: cover;
     background-position: center;
     position: relative;
@@ -117,11 +77,11 @@ header p {
     position: relative;
     z-index: 1;
 }
+
 .logo img {
-    /* Usa um filtro para inverter as cores da imagem e a deixa branca. */
     filter: brightness(0) invert(1);
-    
 }
+
 .page-layout {
     display: flex;
     gap: 20px;
@@ -249,7 +209,8 @@ label {
 input[type="text"],
 input[type="tel"],
 input[type="email"],
-input[type="time"] {
+input[type="time"],
+select {
     width: 100%;
     padding: 10px;
     border: 1px solid var(--dark-border);
@@ -293,7 +254,7 @@ input[readonly] {
     object-fit: cover;
 }
 
-.barb-name1, .barb-name2, .barb-name3 {
+.barb-name {
     margin-top: 5px;
     font-size: 0.9em;
     color: var(--dark-text);
@@ -317,7 +278,13 @@ input[readonly] {
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.submit-btn {
+.submit-btn:disabled {
+    background-color: var(--dark-border);
+    cursor: not-allowed;
+    color: #888;
+}
+
+.submit-btn:enabled {
     background-color: var(--dark-accent);
     color: var(--dark-black);
 }
@@ -327,7 +294,7 @@ input[readonly] {
     color: var(--dark-text);
 }
 
-.submit-btn:hover {
+.submit-btn:hover:enabled {
     background-color: var(--dourado-medio);
     transform: translateY(-2px);
 }
@@ -388,7 +355,7 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0; /* Remover padding extra */
+    padding: 0;
     margin-bottom: 0;
     transition: background 0.3s;
 }
@@ -449,7 +416,7 @@ footer {
     max-width: 350px;
     color: var(--dark-text);
     position: relative;
-    border: 3px solid var(--dark-accent); /* borda amarela */
+    border: 3px solid var(--dark-accent);
 }
 .close {
     position: absolute;
@@ -459,43 +426,36 @@ footer {
     color: var(--dark-accent);
 }
 
-/* Estilos do calendário */
+/* Novo estilo para o calendário e horários */
 .calendar-section {
     margin-top: 20px;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-#calendar-container {
-    width: 100%;
     padding: 20px;
     background-color: var(--dark-surface);
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    color: var(--dark-text);
-    overflow-x: auto;
+    border: 2px solid var(--dark-border);
 }
 
 .calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .calendar-header h4 {
     margin: 0;
     font-size: 1.5em;
-    color: var(--dark-text);
+    text-transform: capitalize;
+    color: var(--dark-accent);
 }
 
 .calendar-header button {
     background: none;
     border: none;
+    color: var(--dark-accent);
     font-size: 1.5em;
     cursor: pointer;
-    color: var(--dark-accent);
 }
 
 .calendar-weekdays {
@@ -503,31 +463,30 @@ footer {
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
     font-weight: bold;
+    color: var(--dark-gray);
     margin-bottom: 10px;
-    color: var(--dark-text);
 }
 
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
-    min-height: 120px;
+    text-align: center;
 }
 
 .day {
-    padding: 10px;
-    text-align: center;
+    padding: 10px 5px;
     border-radius: 5px;
+    background-color: var(--dark-black);
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-    min-width: 32px;
-    min-height: 32px;
-    box-sizing: border-box;
+    transition: background-color 0.2s, transform 0.2s;
+    user-select: none;
 }
 
-.day:not(.empty):hover {
+.day.empty {
     background-color: var(--dark-border);
-    transform: scale(1.05);
+    color: #888;
+    cursor: not-allowed;
 }
 
 .day.selected {
@@ -536,15 +495,49 @@ footer {
     font-weight: bold;
 }
 
-.day.today {
-    border: 2px solid var(--dark-accent);
-    background-color: var(--dark-surface);
-    color: var(--dark-text);
+.day:not(.empty):hover {
+    background-color: var(--dark-gray);
+    color: var(--dark-black);
 }
 
-.day.empty {
-    cursor: default;
-    background: none;
+.horarios-disponiveis {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--dark-border);
+}
+
+.horarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.horario-item {
+    background-color: var(--dark-black);
+    color: var(--dark-text);
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.horario-item.selected {
+    background-color: var(--dark-accent);
+    color: var(--dark-black);
+    font-weight: bold;
+}
+
+.horario-item.booked {
+    background-color: #555;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.horario-item:not(.booked):hover {
+    background-color: var(--dark-border);
+    transform: scale(1.05);
 }
 
 /* Responsividade do calendário */
@@ -614,7 +607,7 @@ footer {
 .side-menu {
     position: fixed;
     top: 120px;
-    right: -70px; /* valor maior que a largura do menu */
+    right: -70px;
     width: 70px;
     background: var(--dark-surface);
     border-radius: 10px 0 0 10px;
@@ -665,7 +658,6 @@ footer {
     margin-bottom: 2px;
 }
 
-/* Exibe texto apenas em telas maiores */
 .side-menu a span {
     font-size: 0.8em;
     margin-top: 2px;
@@ -682,7 +674,6 @@ footer {
     }
 }
 
-/* Responsivo: menu lateral sempre visível e compacto em telas pequenas */
 @media (max-width: 700px) {
     .side-menu {
         top: 80px;
@@ -700,46 +691,7 @@ footer {
     }
 }
 
-/* Para telas muito pequenas, menu lateral ocupa só o topo */
 @media (max-width: 400px) {
-    /* Remova ou comente tudo abaixo para manter o menu na lateral direita */
-    /*
-    .side-menu {
-        top: 0;
-        right: 0;
-        width: 100vw;
-        height: 50px;
-        border-radius: 0 0 10px 10px;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        padding: 0;
-    }
-    .side-menu.open {
-        right: 0;
-        top: 0;
-        width: 100vw;
-        height: 50px;
-        opacity: 1;
-        pointer-events: auto;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-    }
-    .side-menu ul {
-        flex-direction: row;
-        gap: 0;
-        width: 100%;
-        justify-content: space-around;
-        align-items: center;
-    }
-    .side-menu a {
-        padding: 0 8px;
-        font-size: 1.2em;
-    }
-    */
-    /* Mantenha apenas ajustes do botão de abrir menu se quiser */
     #side-menu-handle {
         top: 60px;
         width: 32px;
@@ -751,7 +703,6 @@ footer {
     }
 }
 
-/* Aba para abrir o menu lateral */
 #side-menu-handle {
     position: fixed;
     top: 160px;
@@ -807,11 +758,10 @@ footer {
     }
 }
 
-/* Menu lateral fechado: botão totalmente visível */
 .side-menu {
     position: fixed;
     top: 120px;
-    right: -70px; /* valor maior que a largura do menu */
+    right: -70px;
     width: 70px;
     background: var(--dark-surface);
     border-radius: 10px 0 0 10px;
@@ -827,7 +777,6 @@ footer {
     pointer-events: none;
 }
 
-/* Menu lateral aberto */
 .side-menu.open {
     right: 0;
     opacity: 1;
