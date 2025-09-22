@@ -782,11 +782,37 @@ footer {
     opacity: 1;
     pointer-events: auto;
 }
-
 .icon-svg {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 1.7em;
     margin-bottom: 2px;
+}
+.servicos-opcoes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.servico-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--dark-black);
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid var(--dark-border);
+}
+
+.servico-group label {
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.servico-group input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
 }

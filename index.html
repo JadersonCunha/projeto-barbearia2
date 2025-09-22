@@ -66,16 +66,31 @@
                         <label for="telefone">Telefone</label>
                         <input type="tel" id="telefone" placeholder="Seu telefone" name="telefone" required>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="servico">Serviço</label>
-                        <select id="servico" name="servico" required>
-                            <option value="">Selecione um serviço</option>
-                            <option value="Corte Masculino">Corte Masculino (R$ 40,00)</option>
-                            <option value="Barba Clássica">Barba Clássica (R$ 30,00)</option>
-                            <option value="Cabelo + Barba">Cabelo + Barba (R$ 65,00)</option>
-                            <option value="Design de Sobrancelha">Design de Sobrancelha (R$ 20,00)</option>
-                            <option value="Dia do Noivo">Dia do Noivo (R$ 150,00)</option>
-                        </select>
+                        <label>Serviços</label>
+                        <div class="servicos-opcoes">
+                            <div class="servico-group">
+                                <input type="checkbox" id="corte" name="servico" value="Corte Masculino" data-price="40.00">
+                                <label for="corte">Corte Masculino (R$ 40,00)</label>
+                            </div>
+                            <div class="servico-group">
+                                <input type="checkbox" id="barba" name="servico" value="Barba Clássica" data-price="30.00">
+                                <label for="barba">Barba Clássica (R$ 30,00)</label>
+                            </div>
+                            <div class="servico-group">
+                                <input type="checkbox" id="corte-barba" name="servico" value="Cabelo + Barba" data-price="65.00">
+                                <label for="corte-barba">Cabelo + Barba (R$ 65,00)</label>
+                            </div>
+                            <div class="servico-group">
+                                <input type="checkbox" id="sobrancelha" name="servico" value="Design de Sobrancelha" data-price="20.00">
+                                <label for="sobrancelha">Design de Sobrancelha (R$ 20,00)</label>
+                            </div>
+                            <div class="servico-group">
+                                <input type="checkbox" id="dia-noivo" name="servico" value="Dia do Noivo" data-price="150.00">
+                                <label for="dia-noivo">Dia do Noivo (R$ 150,00)</label>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -135,7 +150,7 @@
 
         <div class="right-sidebar">
             <section id="horarios">
-                <h2>Horários de Atendimento</h2>
+                <h2>Agenda dos Barbeiros</h2>
                 <ul style="list-style:none; padding-left:0;">
                     <li><strong>Segunda a Sexta-feira:</strong> 09:00 às 21:00</li>
                     <li><strong>Sábados:</strong> 09:00 às 19:00</li>

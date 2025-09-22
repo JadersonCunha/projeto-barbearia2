@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('agendamento-form');
     const nomeInput = document.getElementById('nome');
     const telefoneInput = document.getElementById('telefone');
-    const servicoSelect = document.getElementById('servico');
+    // REMOVIDO: const servicoSelect = document.getElementById('servico');
+    const servicoCheckboxes = document.querySelectorAll('input[name="servico"]');
     const barbeiros = document.querySelectorAll('.barb-img');
     const agendamentoMessage = document.getElementById('agendamento-message');
     const agendarBtn = document.querySelector('.submit-btn');
@@ -71,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isPast = dayDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
             const isSunday = dayDate.getDay() === 0;
             const isFeriado = feriados.includes(dateStr);
+            const isToday = dayDate.toDateString() === today.toDateString();
 
             if (isPast || isSunday || isFeriado) {
                 dayDiv.classList.add('empty');
@@ -82,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     dayDiv.classList.add('selected');
                 }
             }
+            if(isToday && !isPast && !isSunday && !isFeriado) {
+                dayDiv.classList.add('today');
+            }
             calendarDays.appendChild(dayDiv);
         }
     }
@@ -92,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dataSelecionada = dateStr;
         document.getElementById('data-agendamento').value = dateStr;
 
-        const agendamentosDoDia = agendamentosPorBarbeiro[barbeiroSelecionado.dataset.id][dateStr] || [];
+        const agendamentosDoDia = agendamentosPorBarbeiro[barbeiroSelecionado.dataset.id]?.[dateStr] || [];
         const horariosLivres = horariosTrabalho.filter(h => !agendamentosDoDia.includes(h));
         renderHorarios(horariosLivres);
         checkFormValidity();
@@ -178,15 +183,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkFormValidity() {
         const nome = nomeInput.value.trim();
         const telefone = telefoneInput.value.trim();
-        const servico = servicoSelect.value;
+        const servicosSelecionados = document.querySelectorAll('input[name="servico"]:checked').length > 0;
 
-        if (nome && telefone && servico && barbeiroSelecionado && dataSelecionada && horarioSelecionado) {
+        if (nome && telefone && servicosSelecionados && barbeiroSelecionado && dataSelecionada && horarioSelecionado) {
             agendarBtn.disabled = false;
         } else {
             agendarBtn.disabled = true;
         }
     }
 
+    form.addEventListener('change', checkFormValidity);
     form.addEventListener('input', checkFormValidity);
 
     agendarBtn.addEventListener('click', function(event) {
@@ -198,13 +204,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const nome = nomeInput.value;
         const telefone = telefoneInput.value;
-        const servico = servicoSelect.value;
+        const servicos = Array.from(document.querySelectorAll('input[name="servico"]:checked'))
+                             .map(checkbox => checkbox.value)
+                             .join(', ');
         const profissionalNome = barbeiroSelecionado.dataset.name;
         const data = dataSelecionada;
         const horario = horarioSelecionado;
 
         // Adiciona o novo agendamento ao objeto e salva no localStorage
         const barberId = barbeiroSelecionado.dataset.id;
+        if (!agendamentosPorBarbeiro[barberId]) {
+            agendamentosPorBarbeiro[barberId] = {};
+        }
         if (!agendamentosPorBarbeiro[barberId][data]) {
             agendamentosPorBarbeiro[barberId][data] = [];
         }
@@ -216,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clienteAgendamentos.push({
             nome,
             telefone,
-            servico,
+            servico: servicos,
             profissional: profissionalNome,
             data,
             horario
@@ -226,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mensagem = `Olá, gostaria de agendar um horário!
 Nome: ${nome}
 Telefone: ${telefone}
-Serviço: ${servico}
+Serviço: ${servicos}
 Profissional: ${profissionalNome}
 Data: ${data}
 Horário: ${horario}`;
@@ -249,8 +260,8 @@ Horário: ${horario}`;
     // Configuração inicial do formulário
     agendarBtn.disabled = true;
     scheduleContainer.style.display = 'none';
-
-    // Código existente para o menu lateral, modais, etc.
+    
+    // Back to Top Button
     const backToTopButton = document.getElementById("back-to-top");
     window.addEventListener("scroll", () => {
         backToTopButton.style.display = window.scrollY > 300 ? "flex" : "none";
@@ -407,7 +418,8 @@ Horário: ${horario}`;
         // Atualiza a lista de agendamentos por barbeiro para que o horário cancelado volte a ficar disponível
         checks.forEach(check => {
             const [data, horario, profissional] = check.value.split('|');
-            const barbeiroId = Object.keys(agendamentosPorBarbeiro).find(id => agendamentosPorBarbeiro[id][data]?.includes(horario) && barbeiros.find(b => b.dataset.id === id).dataset.name === profissional);
+            const barbeiroId = Object.keys(agendamentosPorBarbeiro).find(id => agendamentosPorBarbeiro[id] && agendamentosPorBarbeiro[id][data]?.includes(horario) && document.querySelector(`[data-id="${id}"]`).dataset.name === profissional);
+            
             if (barbeiroId && agendamentosPorBarbeiro[barbeiroId][data]) {
                 const index = agendamentosPorBarbeiro[barbeiroId][data].indexOf(horario);
                 if (index > -1) {
@@ -425,4 +437,7 @@ Horário: ${horario}`;
         e.preventDefault();
         document.getElementById('cliente-link').click();
     };
+
+    // Função de inicialização
+    renderCalendar();
 });
