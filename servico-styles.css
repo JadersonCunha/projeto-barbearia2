@@ -1,0 +1,11 @@
+.servico-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.servico-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}

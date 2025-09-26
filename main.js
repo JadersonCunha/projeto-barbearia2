@@ -1,443 +1,437 @@
 document.addEventListener('DOMContentLoaded', () => {
-
-    const form = document.getElementById('agendamento-form');
-    const nomeInput = document.getElementById('nome');
-    const telefoneInput = document.getElementById('telefone');
-    // REMOVIDO: const servicoSelect = document.getElementById('servico');
-    const servicoCheckboxes = document.querySelectorAll('input[name="servico"]');
-    const barbeiros = document.querySelectorAll('.barb-img');
-    const agendamentoMessage = document.getElementById('agendamento-message');
-    const agendarBtn = document.querySelector('.submit-btn');
-    const limparBtn = document.querySelector('.submit-btn-clear');
+    // ################### Agendamento e Calendário ###################
+    const agendamentoForm = document.getElementById('agendamento-form');
+    const barbeiroImgs = document.querySelectorAll('.barb-img');
     const scheduleContainer = document.getElementById('barber-schedule-container');
+    const dataInput = document.getElementById('data-agendamento');
+    const horarioInput = document.getElementById('horario-agendamento');
+    const profissionalInput = document.getElementById('profissional-agendamento');
+    const submitBtn = document.querySelector('.submit-btn');
+    const clearBtn = document.querySelector('.submit-btn-clear');
+    const calendarDays = document.getElementById('calendar-days');
+    const currentMonthYear = document.getElementById('current-month-year');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    const horariosGrid = document.getElementById('horarios-grid');
+    const servicosCheckboxes = document.querySelectorAll('input[name="servico"]');
 
-    let barbeiroSelecionado = null;
-    let dataSelecionada = null;
-    let horarioSelecionado = null;
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-    // Horários de trabalho comuns para todos
-    const horariosTrabalho = [
-        '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-        '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-        '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
-        '19:00', '19:30', '20:00', '20:30'
+    let today = new Date();
+    let selectedDate = null;
+    let selectedBarberId = null;
+
+    const horariosFixos = [
+        "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+        "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+        "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
+        "19:00", "19:30", "20:00", "20:30"
     ];
 
-    // Dados de exemplo para agendamentos por barbeiro
-    let agendamentosPorBarbeiro = JSON.parse(localStorage.getItem('agendamentosPorBarbeiro')) || {
-        'barb1': {
-            '2025-09-22': ['10:00', '15:30'],
-            '2025-09-23': ['09:30', '14:00', '18:30']
-        },
-        'barb2': {
-            '2025-09-22': ['11:00', '16:00'],
-            '2025-09-24': ['13:30']
-        },
-        'barb3': {
-            '2025-09-22': ['09:00', '13:00', '17:00'],
-            '2025-09-25': ['10:30', '15:00']
-        }
+    const feriados = [
+        "2025-01-01", "2025-02-25", "2025-02-26", "2025-04-18", "2025-04-21",
+        "2025-05-01", "2025-06-19", "2025-09-07", "2025-10-12", "2025-11-02",
+        "2025-11-15", "2025-12-25"
+    ];
+
+    let agendamentosFicticios = JSON.parse(localStorage.getItem('agendamentosFicticios')) || [];
+    let usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
+
+    const updateSubmitButton = () => {
+        const selectedServices = document.querySelectorAll('input[name="servico"]:checked').length > 0;
+        const isFormFilled = !!document.getElementById('nome').value && !!document.getElementById('telefone').value;
+        const isSelectionMade = !!selectedBarberId && !!selectedDate && !!horarioInput.value;
+        submitBtn.disabled = !(selectedServices && isFormFilled && isSelectionMade);
     };
 
-    let currentCalendarDate = new Date();
-
-    function renderCalendar() {
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        const feriados = ['2025-01-01', '2025-04-21', '2025-05-01'];
-
-        const month = currentCalendarDate.getMonth();
-        const year = currentCalendarDate.getFullYear();
-
-        document.getElementById('current-month-year').textContent = `${monthNames[month]} ${year}`;
-        const calendarDays = document.getElementById('calendar-days');
+    const renderCalendar = (date) => {
         calendarDays.innerHTML = '';
+        currentMonthYear.textContent = `${meses[date.getMonth()]} ${date.getFullYear()}`;
 
-        const firstDayOfMonth = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const today = new Date();
+        const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+        const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
         for (let i = 0; i < firstDayOfMonth; i++) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.classList.add('day', 'empty');
-            calendarDays.appendChild(emptyDiv);
+            const emptyDay = document.createElement('div');
+            emptyDay.classList.add('day', 'empty');
+            calendarDays.appendChild(emptyDay);
         }
 
-        for (let i = 1; i <= daysInMonth; i++) {
-            const dayDiv = document.createElement('div');
-            dayDiv.classList.add('day');
-            dayDiv.textContent = i;
-            const dayDate = new Date(year, month, i);
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        const todayNoTime = new Date();
+        todayNoTime.setHours(0, 0, 0, 0);
 
-            const isPast = dayDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            const isSunday = dayDate.getDay() === 0;
-            const isFeriado = feriados.includes(dateStr);
-            const isToday = dayDate.toDateString() === today.toDateString();
+        for (let i = 1; i <= lastDayOfMonth; i++) {
+            const dayElement = document.createElement('div');
+            dayElement.classList.add('day');
+            dayElement.textContent = i;
+            const dayDate = new Date(date.getFullYear(), date.getMonth(), i);
+            dayDate.setHours(0, 0, 0, 0);
 
-            if (isPast || isSunday || isFeriado) {
-                dayDiv.classList.add('empty');
+            const isWeekend = dayDate.getDay() === 0;
+            const isHoliday = feriados.includes(dayDate.toISOString().slice(0, 10));
+            const isPast = dayDate < todayNoTime;
+
+            if (isPast || isWeekend || isHoliday) {
+                dayElement.classList.add('empty');
             } else {
-                dayDiv.addEventListener('click', () => {
-                    selectDay(dayDiv, dateStr);
+                dayElement.addEventListener('click', () => {
+                    document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
+                    dayElement.classList.add('selected');
+                    selectedDate = dayDate.toISOString().slice(0, 10);
+                    dataInput.value = selectedDate;
+                    horarioInput.value = '';
+                    renderHorarios();
+                    updateSubmitButton();
                 });
-                if (dataSelecionada === dateStr) {
-                    dayDiv.classList.add('selected');
-                }
             }
-            if(isToday && !isPast && !isSunday && !isFeriado) {
-                dayDiv.classList.add('today');
-            }
-            calendarDays.appendChild(dayDiv);
+
+            calendarDays.appendChild(dayElement);
         }
-    }
+    };
 
-    function selectDay(element, dateStr) {
-        document.querySelectorAll('#calendar-days .day').forEach(d => d.classList.remove('selected'));
-        element.classList.add('selected');
-        dataSelecionada = dateStr;
-        document.getElementById('data-agendamento').value = dateStr;
-
-        const agendamentosDoDia = agendamentosPorBarbeiro[barbeiroSelecionado.dataset.id]?.[dateStr] || [];
-        const horariosLivres = horariosTrabalho.filter(h => !agendamentosDoDia.includes(h));
-        renderHorarios(horariosLivres);
-        checkFormValidity();
-    }
-
-    function renderHorarios(horarios) {
-        const horariosGrid = document.getElementById('horarios-grid');
+    const renderHorarios = () => {
         horariosGrid.innerHTML = '';
-        horarioSelecionado = null;
-        document.getElementById('horario-agendamento').value = '';
-
-        if (horarios.length === 0) {
-            horariosGrid.innerHTML = '<p class="no-times-available">Nenhum horário disponível neste dia.</p>';
+        if (!selectedBarberId || !selectedDate) {
             return;
         }
 
-        horarios.forEach(horario => {
-            const horarioItem = document.createElement('div');
-            horarioItem.classList.add('horario-item');
-            horarioItem.textContent = horario;
-            horarioItem.addEventListener('click', () => {
-                selectHorario(horarioItem, horario);
-            });
-            horariosGrid.appendChild(horarioItem);
+        const agendamentosDoDia = agendamentosFicticios.filter(agendamento =>
+            agendamento.profissional === selectedBarberId && agendamento.data === selectedDate
+        );
+
+        horariosFixos.forEach(horario => {
+            const horarioElement = document.createElement('div');
+            horarioElement.classList.add('horario-item');
+            horarioElement.textContent = horario;
+
+            const isBooked = agendamentosDoDia.some(ag => ag.horario === horario);
+
+            if (isBooked) {
+                horarioElement.classList.add('booked');
+            } else {
+                horarioElement.addEventListener('click', () => {
+                    document.querySelectorAll('.horario-item').forEach(h => h.classList.remove('selected'));
+                    horarioElement.classList.add('selected');
+                    horarioInput.value = horario;
+                    updateSubmitButton();
+                });
+            }
+
+            horariosGrid.appendChild(horarioElement);
         });
-        checkFormValidity();
-    }
+    };
 
-    function selectHorario(element, horario) {
-        document.querySelectorAll('#horarios-grid .horario-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-        element.classList.add('selected');
-        horarioSelecionado = horario;
-        document.getElementById('horario-agendamento').value = horario;
-        checkFormValidity();
-    }
-
-    function resetForm() {
-        form.reset();
-        agendarBtn.disabled = true;
-        barbeiros.forEach(b => b.classList.remove('selected'));
-        scheduleContainer.style.display = 'none';
-        barbeiroSelecionado = null;
-        dataSelecionada = null;
-        horarioSelecionado = null;
-        agendamentoMessage.textContent = '';
-    }
-
-    barbeiros.forEach(barbeiro => {
+    barbeiroImgs.forEach(barbeiro => {
         barbeiro.addEventListener('click', () => {
-            const barberId = barbeiro.dataset.id;
-            barbeiros.forEach(b => b.classList.remove('selected'));
+            barbeiroImgs.forEach(b => b.classList.remove('selected'));
             barbeiro.classList.add('selected');
+            selectedBarberId = barbeiro.dataset.id;
+            profissionalInput.value = barbeiro.dataset.name;
 
-            barbeiroSelecionado = barbeiro;
-            document.getElementById('profissional-agendamento').value = barbeiro.dataset.name;
-
-            dataSelecionada = null;
-            horarioSelecionado = null;
-            document.getElementById('data-agendamento').value = '';
-            document.getElementById('horario-agendamento').value = '';
-
-            scheduleContainer.style.display = 'flex';
-            currentCalendarDate = new Date();
-            renderCalendar();
-            renderHorarios([]);
-            checkFormValidity();
+            scheduleContainer.style.display = 'block';
+            today = new Date();
+            renderCalendar(today);
+            selectedDate = null;
+            dataInput.value = '';
+            horarioInput.value = '';
+            horariosGrid.innerHTML = '';
+            updateSubmitButton();
         });
     });
 
-    document.getElementById('prev-month').onclick = () => {
-        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-        renderCalendar();
-        renderHorarios([]);
-    };
-    document.getElementById('next-month').onclick = () => {
-        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-        renderCalendar();
-        renderHorarios([]);
-    };
+    prevMonthBtn.addEventListener('click', () => {
+        today.setMonth(today.getMonth() - 1);
+        renderCalendar(today);
+        selectedDate = null;
+        dataInput.value = '';
+        horarioInput.value = '';
+        horariosGrid.innerHTML = '';
+        updateSubmitButton();
+    });
 
-    function checkFormValidity() {
-        const nome = nomeInput.value.trim();
-        const telefone = telefoneInput.value.trim();
-        const servicosSelecionados = document.querySelectorAll('input[name="servico"]:checked').length > 0;
+    nextMonthBtn.addEventListener('click', () => {
+        today.setMonth(today.getMonth() + 1);
+        renderCalendar(today);
+        selectedDate = null;
+        dataInput.value = '';
+        horarioInput.value = '';
+        horariosGrid.innerHTML = '';
+        updateSubmitButton();
+    });
 
-        if (nome && telefone && servicosSelecionados && barbeiroSelecionado && dataSelecionada && horarioSelecionado) {
-            agendarBtn.disabled = false;
-        } else {
-            agendarBtn.disabled = true;
-        }
-    }
+    servicosCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSubmitButton);
+    });
 
-    form.addEventListener('change', checkFormValidity);
-    form.addEventListener('input', checkFormValidity);
+    agendamentoForm.addEventListener('input', updateSubmitButton);
+    agendamentoForm.addEventListener('change', updateSubmitButton);
 
-    agendarBtn.addEventListener('click', function(event) {
-        event.preventDefault();
+    agendamentoForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-        if (agendarBtn.disabled) {
-            return;
-        }
-
-        const nome = nomeInput.value;
-        const telefone = telefoneInput.value;
+        const nome = document.getElementById('nome').value;
+        const telefone = document.getElementById('telefone').value;
         const servicos = Array.from(document.querySelectorAll('input[name="servico"]:checked'))
-                             .map(checkbox => checkbox.value)
-                             .join(', ');
-        const profissionalNome = barbeiroSelecionado.dataset.name;
-        const data = dataSelecionada;
-        const horario = horarioSelecionado;
+            .map(checkbox => checkbox.value)
+            .join(', ');
 
-        // Adiciona o novo agendamento ao objeto e salva no localStorage
-        const barberId = barbeiroSelecionado.dataset.id;
-        if (!agendamentosPorBarbeiro[barberId]) {
-            agendamentosPorBarbeiro[barberId] = {};
-        }
-        if (!agendamentosPorBarbeiro[barberId][data]) {
-            agendamentosPorBarbeiro[barberId][data] = [];
-        }
-        agendamentosPorBarbeiro[barberId][data].push(horario);
-        localStorage.setItem('agendamentosPorBarbeiro', JSON.stringify(agendamentosPorBarbeiro));
+        const novoAgendamento = {
+            nome: nome,
+            telefone: telefone,
+            servicos: servicos,
+            profissional: profissionalInput.value,
+            data: dataInput.value,
+            horario: horarioInput.value,
+            id: Date.now()
+        };
 
-        // Adiciona o agendamento à lista do cliente
-        let clienteAgendamentos = JSON.parse(localStorage.getItem('agendamentos') || '[]');
-        clienteAgendamentos.push({
-            nome,
-            telefone,
-            servico: servicos,
-            profissional: profissionalNome,
-            data,
-            horario
+        agendamentosFicticios.push(novoAgendamento);
+        localStorage.setItem('agendamentosFicticios', JSON.stringify(agendamentosFicticios));
+
+        const mensagemWhatsapp = `Olá, gostaria de agendar um horário na Barbearia Alpha!
+*Nome:* ${nome}
+*Telefone:* ${telefone}
+*Serviço(s):* ${servicos}
+*Profissional:* ${profissionalInput.value}
+*Data:* ${new Date(dataInput.value + 'T00:00:00').toLocaleDateString('pt-BR')}
+*Horário:* ${horarioInput.value}
+`;
+        const telefoneWhatsapp = "5551985330121";
+        const linkWhatsapp = `https://wa.me/${telefoneWhatsapp}?text=${encodeURIComponent(mensagemWhatsapp)}`;
+
+        window.open(linkWhatsapp, '_blank');
+
+        agendamentoForm.reset();
+        barbeiroImgs.forEach(b => b.classList.remove('selected'));
+        scheduleContainer.style.display = 'none';
+        submitBtn.disabled = true;
+        document.getElementById('agendamento-message').textContent = 'Agendamento enviado! Aguarde a confirmação.';
+    });
+
+    clearBtn.addEventListener('click', () => {
+        agendamentoForm.reset();
+        barbeiroImgs.forEach(b => b.classList.remove('selected'));
+        scheduleContainer.style.display = 'none';
+        submitBtn.disabled = true;
+        document.getElementById('agendamento-message').textContent = '';
+        selectedBarberId = null;
+        selectedDate = null;
+        horarioInput.value = '';
+        dataInput.value = '';
+        horariosGrid.innerHTML = '';
+    });
+
+    // ################### Botão Voltar ao Topo ###################
+    const backToTopBtn = document.getElementById('back-to-top');
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.style.display = 'flex';
+        } else {
+            backToTopBtn.style.display = 'none';
+        }
+    });
+
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
         });
-        localStorage.setItem('agendamentos', JSON.stringify(clienteAgendamentos));
-        
-        const mensagem = `Olá, gostaria de agendar um horário!
-Nome: ${nome}
-Telefone: ${telefone}
-Serviço: ${servicos}
-Profissional: ${profissionalNome}
-Data: ${data}
-Horário: ${horario}`;
-
-        const url = `https://wa.me/5551985330121?text=${encodeURIComponent(mensagem)}`;
-        window.open(url, '_blank');
-
-        agendamentoMessage.textContent = 'Agendamento enviado com sucesso! Aguarde a confirmação.';
-        agendamentoMessage.style.color = '#28a745';
-        
-        resetForm();
-        renderCalendar(); // Renderiza o calendário novamente para atualizar os horários
     });
 
-    limparBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        resetForm();
-    });
-    
-    // Configuração inicial do formulário
-    agendarBtn.disabled = true;
-    scheduleContainer.style.display = 'none';
-    
-    // Back to Top Button
-    const backToTopButton = document.getElementById("back-to-top");
-    window.addEventListener("scroll", () => {
-        backToTopButton.style.display = window.scrollY > 300 ? "flex" : "none";
-    });
-
-    backToTopButton.addEventListener("click", () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-    
+    // ################### Menu Lateral ###################
     const sideMenuHandle = document.getElementById('side-menu-handle');
     const sideMenu = document.querySelector('.side-menu');
 
-    sideMenuHandle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        sideMenu.classList.add('open');
-        sideMenuHandle.style.display = 'none';
-    });
+    if (sideMenuHandle && sideMenu) {
+        sideMenuHandle.style.display = 'flex';
 
-    document.addEventListener('click', (e) => {
-        if (sideMenu.classList.contains('open') && !sideMenu.contains(e.target) && !sideMenuHandle.contains(e.target)) {
-            sideMenu.classList.remove('open');
-            sideMenuHandle.style.display = 'flex';
-        }
-    });
-
-    // Modais
-    const horarioModal = document.getElementById("horario-modal");
-    const horarioLink = document.getElementById("horario-link");
-    const closeHorarioBtn = document.querySelector(".close-horario");
-
-    horarioLink.onclick = function() { horarioModal.style.display = "block"; };
-    closeHorarioBtn.onclick = function() { horarioModal.style.display = "none"; };
-    window.onclick = function(event) { if (event.target == horarioModal) horarioModal.style.display = "none"; };
-    
-    const clienteLink = document.getElementById('cliente-link');
-    const clienteModal = document.getElementById('cliente-modal');
-    const closeModal = clienteModal.querySelector('.close');
-    const btnCadastrar = document.getElementById('btn-cadastrar');
-    const btnEntrar = document.getElementById('btn-entrar');
-    const modalCadastrar = document.getElementById('modal-cadastrar');
-    const modalEntrar = document.getElementById('modal-entrar');
-    const modalMsg = document.getElementById('modal-msg');
-    const agendamentosList = document.getElementById('agendamentos-list');
-    const cancelarBtn = document.getElementById('cancelar-agendamento-btn');
-    const clienteLinkMenu = document.getElementById('cliente-link-menu');
-
-    let clientes = JSON.parse(localStorage.getItem('clientes') || '[]');
-    let telefoneClienteLogado = '';
-    let agendamentos = JSON.parse(localStorage.getItem('agendamentos') || '[]');
-
-    clienteLink.onclick = () => {
-        clienteModal.style.display = 'block';
-        modalCadastrar.style.display = 'none';
-        modalEntrar.style.display = 'none';
-        agendamentosList.innerHTML = '';
-        cancelarBtn.style.display = 'none';
-        modalMsg.textContent = '';
-    };
-
-    closeModal.onclick = () => {
-        clienteModal.style.display = 'none';
-        modalCadastrar.style.display = 'none';
-        modalEntrar.style.display = 'none';
-        modalMsg.textContent = '';
-    };
-
-    window.onclick = e => { if (e.target == clienteModal) closeModal.onclick(); };
-
-    btnCadastrar.onclick = () => {
-        modalCadastrar.style.display = 'block';
-        modalEntrar.style.display = 'none';
-        modalMsg.textContent = '';
-        agendamentosList.innerHTML = '';
-        cancelarBtn.style.display = 'none';
-    };
-
-    btnEntrar.onclick = () => {
-        modalEntrar.style.display = 'block';
-        modalCadastrar.style.display = 'none';
-        modalMsg.textContent = '';
-        agendamentosList.innerHTML = '';
-        cancelarBtn.style.display = 'none';
-    };
-
-    document.getElementById('confirm-cadastro').onclick = () => {
-        const nome = document.getElementById('cad-nome').value.trim();
-        const telefone = document.getElementById('cad-telefone').value.trim();
-        if (!nome || !telefone) {
-            modalMsg.textContent = 'Preencha todos os campos!';
-            return;
-        }
-        if (clientes.find(c => c.telefone === telefone)) {
-            modalMsg.textContent = 'Telefone já cadastrado!';
-            return;
-        }
-        clientes.push({ nome, telefone });
-        localStorage.setItem('clientes', JSON.stringify(clientes));
-        modalMsg.textContent = 'Cadastro realizado!';
-        document.getElementById('cad-nome').value = '';
-        document.getElementById('cad-telefone').value = '';
-    };
-
-    document.getElementById('confirm-login').onclick = () => {
-        const telefone = document.getElementById('login-telefone').value.trim();
-        const cliente = clientes.find(c => c.telefone === telefone);
-        if (cliente) {
-            modalMsg.textContent = 'Login realizado!';
-            telefoneClienteLogado = telefone;
-            mostrarAgendamentosCliente(telefone);
-        } else {
-            modalMsg.textContent = 'Telefone não cadastrado!';
-        }
-        document.getElementById('login-telefone').value = '';
-    };
-    
-    function mostrarAgendamentosCliente(telefone) {
-        const meusAgendamentos = agendamentos.filter(a => a.telefone === telefone);
-        
-        agendamentosList.innerHTML = '';
-        if (meusAgendamentos.length === 0) {
-            agendamentosList.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
-            cancelarBtn.style.display = 'none';
-            return;
-        }
-        
-        let html = '<h4>Seus agendamentos:</h4><form id="form-cancelar-agendamento"><ul style="padding-left:18px;">';
-        meusAgendamentos.forEach((a, index) => {
-            html += `<li>
-                <label>
-                    <input type="checkbox" name="cancelar" value="${a.data}|${a.horario}|${a.profissional}|${a.servico}|${index}">
-                    <strong>${a.data} às ${a.horario}</strong> com <strong>${a.profissional}</strong> — <span>${a.servico}</span>
-                </label>
-            </li>`;
+        sideMenuHandle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sideMenu.classList.add('open');
+            sideMenuHandle.style.display = 'none';
         });
-        html += '</ul></form>';
-        agendamentosList.innerHTML = html;
-        cancelarBtn.style.display = 'block';
-    }
 
-    document.getElementById('cancelar-agendamento-btn').onclick = function() {
-        const telefone = telefoneClienteLogado;
-        const checks = document.querySelectorAll('#form-cancelar-agendamento input[type="checkbox"]:checked');
-        
-        if (checks.length === 0) {
-            alert('Selecione ao menos um serviço para cancelar.');
-            return;
-        }
-        
-        const indicesParaRemover = Array.from(checks).map(check => parseInt(check.value.split('|')[4]));
-        agendamentos = agendamentos.filter((_, index) => !indicesParaRemover.includes(index));
-
-        localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
-        
-        // Atualiza a lista de agendamentos por barbeiro para que o horário cancelado volte a ficar disponível
-        checks.forEach(check => {
-            const [data, horario, profissional] = check.value.split('|');
-            const barbeiroId = Object.keys(agendamentosPorBarbeiro).find(id => agendamentosPorBarbeiro[id] && agendamentosPorBarbeiro[id][data]?.includes(horario) && document.querySelector(`[data-id="${id}"]`).dataset.name === profissional);
-            
-            if (barbeiroId && agendamentosPorBarbeiro[barbeiroId][data]) {
-                const index = agendamentosPorBarbeiro[barbeiroId][data].indexOf(horario);
-                if (index > -1) {
-                    agendamentosPorBarbeiro[barbeiroId][data].splice(index, 1);
-                }
+        document.addEventListener('click', (e) => {
+            if (sideMenu.classList.contains('open') && !sideMenu.contains(e.target) && !sideMenuHandle.contains(e.target)) {
+                sideMenu.classList.remove('open');
+                sideMenuHandle.style.display = 'flex';
             }
         });
-        localStorage.setItem('agendamentosPorBarbeiro', JSON.stringify(agendamentosPorBarbeiro));
-        
-        alert('Agendamento(s) cancelado(s) com sucesso!');
-        mostrarAgendamentosCliente(telefone);
-    };
 
-    clienteLinkMenu.onclick = function(e) {
-        e.preventDefault();
-        document.getElementById('cliente-link').click();
-    };
+        const menuLinks = sideMenu.querySelectorAll('a');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                sideMenu.classList.remove('open');
+                sideMenuHandle.style.display = 'flex';
+            });
+        });
+    }
 
-    // Função de inicialização
-    renderCalendar();
+    // ################### Modais e Área do Cliente ###################
+    const clienteModal = document.getElementById('cliente-modal');
+    const closeBtn = clienteModal ? clienteModal.querySelector('.close') : null;
+    const clienteLinkMenu = document.getElementById('cliente-link-menu');
+
+    const horarioLink = document.getElementById('horario-link');
+    const horarioModal = document.getElementById('horario-modal');
+    const closeHorarioBtn = horarioModal ? horarioModal.querySelector('.close-horario') : null;
+
+    const modalButtons = document.getElementById('modal-buttons');
+    const modalCadastrar = document.getElementById('modal-cadastrar');
+    const modalEntrar = document.getElementById('modal-entrar');
+    const btnCadastrar = document.getElementById('btn-cadastrar');
+    const btnEntrar = document.getElementById('btn-entrar');
+    const confirmCadastroBtn = document.getElementById('confirm-cadastro');
+    const confirmLoginBtn = document.getElementById('confirm-login');
+    const cadNomeInput = document.getElementById('cad-nome');
+    const cadTelefoneInput = document.getElementById('cad-telefone');
+    const loginTelefoneInput = document.getElementById('login-telefone');
+    const modalMsg = document.getElementById('modal-msg');
+    const agendamentosList = document.getElementById('agendamentos-list');
+    const cancelarAgendamentoBtn = document.getElementById('cancelar-agendamento-btn');
+
+    if (clienteLinkMenu && clienteModal) {
+        clienteLinkMenu.addEventListener('click', (e) => {
+            e.preventDefault();
+            clienteModal.style.display = 'block';
+            resetClienteModal();
+        });
+    }
+
+    if (horarioLink && horarioModal) {
+        horarioLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            horarioModal.style.display = 'block';
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            clienteModal.style.display = 'none';
+            resetClienteModal();
+        });
+    }
+    
+    if (closeHorarioBtn) {
+        closeHorarioBtn.addEventListener('click', () => {
+            horarioModal.style.display = 'none';
+        });
+    }
+    window.addEventListener('click', (e) => {
+        if (e.target === clienteModal) {
+            clienteModal.style.display = 'none';
+            resetClienteModal();
+        }
+        if (e.target === horarioModal) {
+            horarioModal.style.display = 'none';
+        }
+    });
+
+    btnCadastrar.addEventListener('click', () => {
+        modalButtons.style.display = 'none';
+        modalCadastrar.style.display = 'flex';
+        modalEntrar.style.display = 'none';
+        modalMsg.textContent = '';
+    });
+
+    btnEntrar.addEventListener('click', () => {
+        modalButtons.style.display = 'none';
+        modalCadastrar.style.display = 'none';
+        modalEntrar.style.display = 'flex';
+        modalMsg.textContent = '';
+    });
+
+    function resetClienteModal() {
+        modalButtons.style.display = 'flex';
+        modalCadastrar.style.display = 'none';
+        modalEntrar.style.display = 'none';
+        modalMsg.textContent = '';
+        agendamentosList.innerHTML = '';
+        cancelarAgendamentoBtn.style.display = 'none';
+        cadNomeInput.value = '';
+        cadTelefoneInput.value = '';
+        loginTelefoneInput.value = '';
+    }
+
+    confirmCadastroBtn.addEventListener('click', () => {
+        const nome = cadNomeInput.value.trim();
+        const telefone = cadTelefoneInput.value.trim();
+
+        if (nome === '' || telefone === '') {
+            modalMsg.textContent = 'Por favor, preencha todos os campos.';
+            return;
+        }
+        if (usuarios[telefone]) {
+            modalMsg.textContent = 'Este telefone já está cadastrado.';
+            return;
+        }
+
+        usuarios[telefone] = { nome: nome };
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+        modalMsg.textContent = 'Cadastro realizado com sucesso!';
+
+        // Redireciona para o login após o cadastro
+        modalCadastrar.style.display = 'none';
+        modalEntrar.style.display = 'flex';
+        loginTelefoneInput.value = telefone; // Preenche o campo de telefone para o usuário
+    });
+
+    confirmLoginBtn.addEventListener('click', () => {
+        const telefone = loginTelefoneInput.value.trim();
+        if (!usuarios[telefone]) {
+            modalMsg.textContent = 'Telefone não encontrado. Por favor, cadastre-se.';
+            return;
+        }
+
+        modalMsg.textContent = `Bem-vindo(a), ${usuarios[telefone].nome}!`;
+        modalEntrar.style.display = 'none';
+
+        displayAgendamentos(telefone);
+    });
+
+    function displayAgendamentos(telefone) {
+        agendamentosList.innerHTML = '';
+        const agendamentosCliente = agendamentosFicticios.filter(ag => ag.telefone === telefone);
+
+        if (agendamentosCliente.length === 0) {
+            agendamentosList.innerHTML = '<p>Você não possui agendamentos.</p>';
+            cancelarAgendamentoBtn.style.display = 'none';
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        agendamentosCliente.forEach(ag => {
+            const li = document.createElement('li');
+            li.dataset.id = ag.id;
+            li.innerHTML = `
+                <div>
+                    <strong>${ag.profissional}</strong><br>
+                    Serviços: ${ag.servicos}<br>
+                    Data: ${new Date(ag.data + 'T00:00:00').toLocaleDateString('pt-BR')} - Horário: ${ag.horario}
+                </div>
+                <input type="checkbox" class="cancel-checkbox">
+            `;
+            ul.appendChild(li);
+        });
+        agendamentosList.appendChild(ul);
+        cancelarAgendamentoBtn.style.display = 'block';
+    }
+
+    cancelarAgendamentoBtn.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.cancel-checkbox:checked');
+        if (checkboxes.length === 0) {
+            alert('Por favor, selecione pelo menos um agendamento para cancelar.');
+            return;
+        }
+
+        const idsToCancel = Array.from(checkboxes).map(cb => parseInt(cb.closest('li').dataset.id));
+        agendamentosFicticios = agendamentosFicticios.filter(ag => !idsToCancel.includes(ag.id));
+        localStorage.setItem('agendamentosFicticios', JSON.stringify(agendamentosFicticios));
+
+        alert('Agendamentos cancelados com sucesso.');
+
+        const telefoneAtual = loginTelefoneInput.value.trim();
+        displayAgendamentos(telefoneAtual);
+    });
 });

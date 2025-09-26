@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +8,10 @@
     <link rel="icon" type="image/x-icon" href="assets/logo_icon.jpg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-
 <body>
+    <button id="theme-toggle" title="Alternar tema">
+        <i class="bi bi-sun-fill"></i>
+    </button>
 
     <header>
         <img class="logo" src="assets/logo_p_b2.jpg" alt="Barbearia Alpha Logo">
@@ -57,104 +58,14 @@
         <div class="right-sidebar">
             <section id="agendamento">
                 <h2>Agende Seu Horário</h2>
-                <form id="agendamento-form">
-                    <div class="form-group">
-                        <label for="nome">Nome Completo</label>
-                        <input type="text" id="nome" placeholder="Seu nome" name="nome" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="telefone">Telefone</label>
-                        <input type="tel" id="telefone" placeholder="Seu telefone" name="telefone" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Serviços</label>
-                        <div class="servicos-opcoes">
-                            <div class="servico-group">
-                                <input type="checkbox" id="corte" name="servico" value="Corte Masculino" data-price="40.00">
-                                <label for="corte">Corte Masculino (R$ 40,00)</label>
-                            </div>
-                            <div class="servico-group">
-                                <input type="checkbox" id="barba" name="servico" value="Barba Clássica" data-price="30.00">
-                                <label for="barba">Barba Clássica (R$ 30,00)</label>
-                            </div>
-                            <div class="servico-group">
-                                <input type="checkbox" id="corte-barba" name="servico" value="Cabelo + Barba" data-price="65.00">
-                                <label for="corte-barba">Cabelo + Barba (R$ 65,00)</label>
-                            </div>
-                            <div class="servico-group">
-                                <input type="checkbox" id="sobrancelha" name="servico" value="Design de Sobrancelha" data-price="20.00">
-                                <label for="sobrancelha">Design de Sobrancelha (R$ 20,00)</label>
-                            </div>
-                            <div class="servico-group">
-                                <input type="checkbox" id="dia-noivo" name="servico" value="Dia do Noivo" data-price="150.00">
-                                <label for="dia-noivo">Dia do Noivo (R$ 150,00)</label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Selecione o Barbeiro:</label>
-                    </div>
-                    <div class="barbeiros">
-                        <div class="barb-img" data-name="Carlos França" data-id="barb1">
-                            <img src="assets/barb1.jfif" alt="Carlos França">
-                            <p class="barb-name">Carlos França</p>
-                        </div>
-                        <div class="barb-img" data-name="André Souza" data-id="barb2">
-                            <img src="assets/barb2.jfif" alt="André Souza">
-                            <p class="barb-name">André Souza</p>
-                        </div>
-                        <div class="barb-img" data-name="Ricardo Silva" data-id="barb3">
-                            <img src="assets/barb3.jpg" alt="Ricardo Silva">
-                            <p class="barb-name">Ricardo Silva</p>
-                        </div>
-                    </div>
-                    
-                    <div class="schedule-container" id="barber-schedule-container">
-                        <div class="calendar-section">
-                            <div class="calendar-header">
-                                <button type="button" id="prev-month">&lt;</button>
-                                <h4 id="current-month-year"></h4>
-                                <button type="button" id="next-month">&gt;</button>
-                            </div>
-                            <div class="calendar-weekdays">
-                                <div>Dom</div>
-                                <div>Seg</div>
-                                <div>Ter</div>
-                                <div>Qua</div>
-                                <div>Qui</div>
-                                <div>Sex</div>
-                                <div>Sáb</div>
-                            </div>
-                            <div class="calendar-days" id="calendar-days"></div>
-                        </div>
-                        <div class="horarios-disponiveis">
-                            <h4 style="margin-bottom: 0;">Horários Disponíveis:</h4>
-                            <div class="horarios-grid" id="horarios-grid"></div>
-                        </div>
-                    </div>
-
-                    <input type="hidden" id="data-agendamento" name="data-agendamento">
-                    <input type="hidden" id="horario-agendamento" name="horario-agendamento">
-                    <input type="hidden" id="profissional-agendamento" name="profissional-agendamento">
-
-                    <div class="button-group">
-                        <button type="submit" class="submit-btn" disabled>Agendar Horário</button>
-                        <button type="reset" class="submit-btn-clear">Limpar</button>
-                    </div>
-                    <p id="agendamento-message"></p>
-                </form>
+                <button id="open-agendamento-modal" class="agendar-btn">Agendar Horário</button>
             </section>
-        </div>
-
-        <div class="right-sidebar">
-            <section id="horarios">
+            
+            <section id="agenda-barbeiros">
                 <h2>Agenda dos Barbeiros</h2>
-                <ul style="list-style:none; padding-left:0;">
-                    <li><strong>Segunda a Sexta-feira:</strong> 09:00 às 21:00</li>
-                    <li><strong>Sábados:</strong> 09:00 às 19:00</li>
-                </ul>
+                <div id="agenda-content">
+                    <p>Clique em "Agendar Horário" para ver a agenda</p>
+                </div>
             </section>
         </div>
     </div>
@@ -201,6 +112,8 @@
             </li>
         </ul>
     </nav>
+
+    <!-- Modais -->
     <div id="horario-modal" class="modal">
         <div class="modal-content">
             <span class="close-horario">&times;</span>
@@ -211,7 +124,7 @@
             </ul>
         </div>
     </div>
-    <a href="#" id="cliente-link">Área do Cliente</a>
+
     <div id="cliente-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -229,6 +142,9 @@
                 <h3>Entrar</h3>
                 <input type="tel" id="login-telefone" placeholder="Telefone">
                 <button id="confirm-login">Entrar</button>
+                <p style="text-align:center; margin-top:15px;">
+                    <a href="#" id="link-cadastrar" style="color: var(--dark-accent); text-decoration: underline; cursor: pointer;">Não tem conta? Cadastre-se</a>
+                </p>
             </div>
             <p id="modal-msg"></p>
             <div id="agendamentos-list"></div>
@@ -236,32 +152,134 @@
         </div>
     </div>
 
+    <div id="agendamento-modal" class="modal">
+        <div class="modal-content agendamento-modal-content">
+            <span class="close" id="close-agendamento">&times;</span>
+            <h3>Agendar Horário</h3>
+            
+            <div class="step" id="step-barbeiro">
+                <h4>1. Escolha o Barbeiro</h4>
+                <div class="barbeiros-modal">
+                    <div class="barb-card" data-name="Carlos França" data-id="barb1">
+                        <img src="assets/barb1.jfif" alt="Carlos França">
+                        <p>Carlos França</p>
+                    </div>
+                    <div class="barb-card" data-name="André Souza" data-id="barb2">
+                        <img src="assets/barb2.jfif" alt="André Souza">
+                        <p>André Souza</p>
+                    </div>
+                    <div class="barb-card" data-name="Ricardo Silva" data-id="barb3">
+                        <img src="assets/barb3.jpg" alt="Ricardo Silva">
+                        <p>Ricardo Silva</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step" id="step-data" style="display:none;">
+                <h4>2. Escolha a Data</h4>
+                <div class="calendar-modal">
+                    <div class="calendar-header">
+                        <button type="button" id="prev-month-modal">&lt;</button>
+                        <h4 id="current-month-year-modal"></h4>
+                        <button type="button" id="next-month-modal">&gt;</button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                    </div>
+                    <div class="calendar-days" id="calendar-days-modal"></div>
+                </div>
+            </div>
+
+            <div class="step" id="step-horario" style="display:none;">
+                <h4>3. Escolha o Horário</h4>
+                <div class="horarios-grid-modal" id="horarios-grid-modal"></div>
+            </div>
+
+            <div class="step" id="step-servico" style="display:none;">
+                <h4>4. Escolha o Serviço</h4>
+                <div class="servicos-modal">
+                    <div class="servico-item" data-value="Corte Masculino" data-price="40.00">
+                        <div class="servico-info">
+                            <span>Corte Masculino</span>
+                            <span>R$ 40,00</span>
+                        </div>
+                        <input type="checkbox" class="servico-checkbox">
+                    </div>
+                    <div class="servico-item" data-value="Barba Clássica" data-price="30.00">
+                        <div class="servico-info">
+                            <span>Barba Clássica</span>
+                            <span>R$ 30,00</span>
+                        </div>
+                        <input type="checkbox" class="servico-checkbox">
+                    </div>
+                    <div class="servico-item" data-value="Cabelo + Barba" data-price="65.00">
+                        <div class="servico-info">
+                            <span>Cabelo + Barba</span>
+                            <span>R$ 65,00</span>
+                        </div>
+                        <input type="checkbox" class="servico-checkbox">
+                    </div>
+                    <div class="servico-item" data-value="Design de Sobrancelha" data-price="20.00">
+                        <div class="servico-info">
+                            <span>Design de Sobrancelha</span>
+                            <span>R$ 20,00</span>
+                        </div>
+                        <input type="checkbox" class="servico-checkbox">
+                    </div>
+                    <div class="servico-item" data-value="Dia do Noivo" data-price="150.00">
+                        <div class="servico-info">
+                            <span>Dia do Noivo</span>
+                            <span>R$ 150,00</span>
+                        </div>
+                        <input type="checkbox" class="servico-checkbox">
+                    </div>
+                </div>
+            </div>
+
+            <div class="step" id="step-dados" style="display:none;">
+                <h4>5. Seus Dados</h4>
+                <div class="dados-form">
+                    <input type="text" id="nome-modal" placeholder="Nome Completo" required>
+                    <input type="tel" id="telefone-modal" placeholder="Telefone" required>
+                </div>
+            </div>
+
+            <div class="step" id="step-resumo" style="display:none;">
+                <h4>Confirmar Agendamento</h4>
+                <div class="resumo-agendamento">
+                    <p><strong>Barbeiro:</strong> <span id="resumo-barbeiro"></span></p>
+                    <p><strong>Data:</strong> <span id="resumo-data"></span></p>
+                    <p><strong>Horário:</strong> <span id="resumo-horario"></span></p>
+                    <p><strong>Serviço:</strong> <span id="resumo-servico"></span></p>
+                    <p><strong>Nome:</strong> <span id="resumo-nome"></span></p>
+                    <p><strong>Telefone:</strong> <span id="resumo-telefone"></span></p>
+                </div>
+                <button id="confirmar-agendamento" class="confirmar-btn">Confirmar Agendamento</button>
+            </div>
+
+            <div class="modal-navigation">
+                <button id="btn-voltar" style="display:none;">Voltar</button>
+                <button id="btn-proximo" style="display:none;">Próximo</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="social-icons">
-            <a><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-instagram"
-                        viewBox="0 0 16 16">
-                        <path
-                            d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334" />
-                </svg></a>
-
-            <a><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-facebook"
-                        viewBox="0 0 16 16">
-                        <path
-                            d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
-                </svg></a>
-
-            <a><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-twitter-x"
-                        viewBox="0 0 16 16">
-                        <path
-                            d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z" />
-                </svg></a>
+            <a href="https://instagram.com/jaderson.cunha" target="_blank"><i class="bi bi-instagram"></i></a>
+            <a href="https://facebook.com" target="_blank"><i class="bi bi-facebook"></i></a>
+            <a href="https://twitter.com" target="_blank"><i class="bi bi-twitter-x"></i></a>
         </div>
         <p class="copyright">&copy; 2025 Barbearia Alpha | Jaderson Cunha</p>
     </footer>
 
     <button id="back-to-top" title="Voltar ao topo">&#8679;</button>
 
+    <link rel="stylesheet" href="servico-styles.css">
+    <script src="theme-toggle.js"></script>
     <script src="main.js"></script>
+    <script src="agendamento-modal.js"></script>
+    <script src="menu-fix.js"></script>
+    <script src="cliente-area.js"></script>
 </body>
-
 </html>
