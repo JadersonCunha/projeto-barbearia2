@@ -328,19 +328,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    btnCadastrar.addEventListener('click', () => {
-        modalButtons.style.display = 'none';
-        modalCadastrar.style.display = 'flex';
-        modalEntrar.style.display = 'none';
-        modalMsg.textContent = '';
-    });
+    if (btnCadastrar) {
+        btnCadastrar.addEventListener('click', () => {
+            modalButtons.style.display = 'none';
+            modalCadastrar.style.display = 'flex';
+            modalEntrar.style.display = 'none';
+            modalMsg.textContent = '';
+        });
+    }
 
-    btnEntrar.addEventListener('click', () => {
-        modalButtons.style.display = 'none';
-        modalCadastrar.style.display = 'none';
-        modalEntrar.style.display = 'flex';
-        modalMsg.textContent = '';
-    });
+    if (btnEntrar) {
+        btnEntrar.addEventListener('click', () => {
+            modalButtons.style.display = 'none';
+            modalCadastrar.style.display = 'none';
+            modalEntrar.style.display = 'flex';
+            modalMsg.textContent = '';
+        });
+    }
 
     function resetClienteModal() {
         modalButtons.style.display = 'flex';
@@ -354,7 +358,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loginTelefoneInput.value = '';
     }
 
-    confirmCadastroBtn.addEventListener('click', () => {
+    if (confirmCadastroBtn) {
+        confirmCadastroBtn.addEventListener('click', () => {
         const nome = cadNomeInput.value.trim();
         const telefone = cadTelefoneInput.value.trim();
 
@@ -375,9 +380,11 @@ document.addEventListener('DOMContentLoaded', () => {
         modalCadastrar.style.display = 'none';
         modalEntrar.style.display = 'flex';
         loginTelefoneInput.value = telefone; // Preenche o campo de telefone para o usuário
-    });
+        });
+    }
 
-    confirmLoginBtn.addEventListener('click', () => {
+    if (confirmLoginBtn) {
+        confirmLoginBtn.addEventListener('click', () => {
         const telefone = loginTelefoneInput.value.trim();
         if (!usuarios[telefone]) {
             modalMsg.textContent = 'Telefone não encontrado. Por favor, cadastre-se.';
@@ -388,7 +395,8 @@ document.addEventListener('DOMContentLoaded', () => {
         modalEntrar.style.display = 'none';
 
         displayAgendamentos(telefone);
-    });
+        });
+    }
 
     function displayAgendamentos(telefone) {
         agendamentosList.innerHTML = '';
@@ -418,7 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelarAgendamentoBtn.style.display = 'block';
     }
 
-    cancelarAgendamentoBtn.addEventListener('click', () => {
+    if (cancelarAgendamentoBtn) {
+        cancelarAgendamentoBtn.addEventListener('click', () => {
         const checkboxes = document.querySelectorAll('.cancel-checkbox:checked');
         if (checkboxes.length === 0) {
             alert('Por favor, selecione pelo menos um agendamento para cancelar.');
@@ -431,7 +440,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert('Agendamentos cancelados com sucesso.');
 
-        const telefoneAtual = loginTelefoneInput.value.trim();
-        displayAgendamentos(telefoneAtual);
-    });
+            const telefoneAtual = loginTelefoneInput.value.trim();
+            displayAgendamentos(telefoneAtual);
+        });
+    }
 });
