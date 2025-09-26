@@ -328,7 +328,6 @@ class AgendamentoModal {
         window.open(linkWhatsapp, '_blank');
         
         this.closeModal();
-        alert('Agendamento realizado com sucesso!');
     }
     
     updateAgendaBarbeiros() {
