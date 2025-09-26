@@ -2,6 +2,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const clienteModal = document.getElementById('cliente-modal');
     const clienteLinkMenu = document.getElementById('cliente-link-menu');
+    
+    if (!clienteModal || !clienteLinkMenu) {
+        console.error('Elementos do modal do cliente não encontrados');
+        return;
+    }
+    
     const closeBtn = clienteModal.querySelector('.close');
     
     const modalButtons = document.getElementById('modal-buttons');
@@ -110,101 +116,109 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Cancelar agendamentos
     cancelarAgendamentoBtn.addEventListener('click', function() {
-        const checkboxes = document.querySelectorAll('.cancel-checkbox:checked');
-        if (checkboxes.length === 0) {
-            alert('Por favor, selecione pelo menos um agendamento para cancelar.');
-            return;
-        }
-
-        let agendamentos = JSON.parse(localStorage.getItem('agendamentos')) || [];
-        
-        // Debug: mostrar todos os agendamentos
-        console.log('Todos os agendamentos:', agendamentos);
-        
-        const idsToCancel = Array.from(checkboxes).map(cb => {
-            const li = cb.closest('li');
-            const id = li ? li.dataset.id : null;
-            console.log('ID encontrado:', id);
-            return id ? parseInt(id) : null;
-        }).filter(id => id !== null && !isNaN(id));
-        
-        console.log('IDs para cancelar:', idsToCancel);
-        
-        if (idsToCancel.length === 0) {
-            alert('Erro ao identificar agendamentos. Tente novamente.');
-            return;
-        }
-
-        // Buscar agendamentos que serão cancelados
-        const agendamentosCancelados = agendamentos.filter(ag => {
-            console.log('Comparando:', ag.id, 'com', idsToCancel);
-            return idsToCancel.includes(ag.id);
-        });
-        
-        console.log('Agendamentos encontrados para cancelar:', agendamentosCancelados);
-        
-        if (agendamentosCancelados.length === 0) {
-            alert('Agendamentos não encontrados. Verifique o console para debug.');
-            return;
-        }
-        
-        // Verificar horários liberados
-        const horariosLiberados = new Set();
-        agendamentosCancelados.forEach(agCancelado => {
-            const outrosAgendamentos = agendamentos.filter(ag => 
-                ag.profissional === agCancelado.profissional &&
-                ag.data === agCancelado.data &&
-                ag.horario === agCancelado.horario &&
-                !idsToCancel.includes(ag.id)
-            );
-            
-            if (outrosAgendamentos.length === 0) {
-                horariosLiberados.add(`${agCancelado.profissional}-${agCancelado.data}-${agCancelado.horario}`);
-            }
-        });
-        
-        // Remover agendamentos
-        agendamentos = agendamentos.filter(ag => !idsToCancel.includes(ag.id));
-        localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
-        
-        // Atualizar agenda
-        if (horariosLiberados.size > 0 && window.AgendamentoModalInstance) {
-            window.AgendamentoModalInstance.updateAgendaBarbeiros();
-        }
-
-        // Enviar WhatsApp
         try {
-            let mensagemCompleta = '🚫 CANCELAMENTO DE AGENDAMENTO - Barbearia Alpha\n\n';
+            const checkboxes = document.querySelectorAll('.cancel-checkbox:checked');
+            console.log('Checkboxes selecionados:', checkboxes.length);
             
-            agendamentosCancelados.forEach((ag, index) => {
-                const dataFormatada = new Date(ag.data + 'T00:00:00').toLocaleDateString('pt-BR');
-                
-                if (index > 0) mensagemCompleta += '\n---\n\n';
-                
-                mensagemCompleta += `*Cliente:* ${ag.nome || 'N/A'}\n`;
-                mensagemCompleta += `*Telefone:* ${ag.telefone || 'N/A'}\n`;
-                mensagemCompleta += `*Profissional:* ${ag.profissional || 'N/A'}\n`;
-                mensagemCompleta += `*Serviço:* ${ag.servicos || 'N/A'}\n`;
-                mensagemCompleta += `*Data:* ${dataFormatada}\n`;
-                mensagemCompleta += `*Horário:* ${ag.horario || 'N/A'}\n`;
+            if (checkboxes.length === 0) {
+                alert('Por favor, selecione pelo menos um agendamento para cancelar.');
+                return;
+            }
+
+            if (!confirm('Tem certeza que deseja cancelar os agendamentos selecionados?')) {
+                return;
+            }
+
+            // Verificar se localStorage está disponível
+            if (typeof(Storage) === "undefined") {
+                alert('Seu navegador não suporta localStorage. Não é possível cancelar agendamentos.');
+                return;
+            }
+
+            let agendamentos;
+            try {
+                agendamentos = JSON.parse(localStorage.getItem('agendamentos')) || [];
+            } catch (e) {
+                console.error('Erro ao ler localStorage:', e);
+                alert('Erro ao acessar dados. Tente novamente.');
+                return;
+            }
+            
+            const telefoneAtual = loginTelefoneInput.value.trim();
+            console.log('Telefone atual:', telefoneAtual);
+            console.log('Agendamentos antes do cancelamento:', agendamentos);
+            
+            // Coletar IDs dos agendamentos selecionados
+            const idsToCancel = [];
+            checkboxes.forEach(checkbox => {
+                const li = checkbox.closest('li');
+                if (li && li.dataset.id) {
+                    const id = parseInt(li.dataset.id);
+                    console.log('ID coletado:', id);
+                    idsToCancel.push(id);
+                }
             });
             
-            mensagemCompleta += '\nO cliente cancelou este(s) agendamento(s).';
+            console.log('IDs para cancelar:', idsToCancel);
             
-            const telefoneWhatsapp = "5551985330121";
-            const linkWhatsapp = `https://wa.me/${telefoneWhatsapp}?text=${encodeURIComponent(mensagemCompleta)}`;
+            // Encontrar agendamentos para cancelar
+            const agendamentosCancelados = agendamentos.filter(ag => {
+                const match = idsToCancel.includes(ag.id);
+                console.log(`Agendamento ${ag.id} será cancelado:`, match);
+                return match;
+            });
             
-            setTimeout(() => {
-                window.open(linkWhatsapp, '_blank');
-            }, 100);
+            console.log('Agendamentos que serão cancelados:', agendamentosCancelados);
+            
+            if (agendamentosCancelados.length === 0) {
+                alert('Nenhum agendamento encontrado para cancelar. Verifique o console para detalhes.');
+                return;
+            }
+            
+            // Remover agendamentos
+            const agendamentosRestantes = agendamentos.filter(ag => !idsToCancel.includes(ag.id));
+            console.log('Agendamentos restantes:', agendamentosRestantes);
+            
+            try {
+                localStorage.setItem('agendamentos', JSON.stringify(agendamentosRestantes));
+                console.log('localStorage atualizado com sucesso');
+            } catch (e) {
+                console.error('Erro ao salvar no localStorage:', e);
+                alert('Erro ao salvar dados. Tente novamente.');
+                return;
+            }
+            
+            // Atualizar agenda se disponível
+            if (window.AgendamentoModalInstance) {
+                try {
+                    window.AgendamentoModalInstance.updateAgendaBarbeiros();
+                } catch (e) {
+                    console.error('Erro ao atualizar agenda:', e);
+                }
+            }
+
+            // Enviar WhatsApp
+            if (agendamentosCancelados.length > 0) {
+                try {
+                    const ag = agendamentosCancelados[0];
+                    const dataFormatada = new Date(ag.data + 'T00:00:00').toLocaleDateString('pt-BR');
+                    
+                    const mensagem = `🚫 CANCELAMENTO - Barbearia Alpha\n\n*Cliente:* ${ag.nome}\n*Telefone:* ${ag.telefone}\n*Profissional:* ${ag.profissional}\n*Serviços:* ${ag.servicos}\n*Data:* ${dataFormatada}\n*Horário:* ${ag.horario}\n\nO cliente cancelou este agendamento.`;
+                    
+                    const linkWhatsapp = `https://wa.me/5551985330121?text=${encodeURIComponent(mensagem)}`;
+                    window.open(linkWhatsapp, '_blank');
+                } catch (e) {
+                    console.error('Erro ao enviar WhatsApp:', e);
+                }
+            }
+
+            alert('Agendamento(s) cancelado(s) com sucesso!');
+            displayAgendamentos(telefoneAtual);
+            
         } catch (error) {
-            console.error('Erro ao enviar WhatsApp:', error);
+            console.error('Erro geral no cancelamento:', error);
+            alert('Erro inesperado. Verifique o console e tente novamente.');
         }
-
-        alert('Agendamentos cancelados com sucesso!');
-
-        const telefoneAtual = loginTelefoneInput.value.trim();
-        displayAgendamentos(telefoneAtual);
     });
 
     // Link para cadastro
@@ -232,6 +246,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const agendamentos = JSON.parse(localStorage.getItem('agendamentos')) || [];
         const agendamentosCliente = agendamentos.filter(ag => ag.telefone === telefone);
 
+        console.log('Agendamentos do cliente:', agendamentosCliente);
+
         if (agendamentosCliente.length === 0) {
             agendamentosList.innerHTML = '<p>Você não possui agendamentos.</p>';
             cancelarAgendamentoBtn.style.display = 'none';
@@ -243,6 +259,8 @@ document.addEventListener('DOMContentLoaded', function() {
         ul.style.padding = '0';
 
         agendamentosCliente.forEach(ag => {
+            console.log('Criando item para agendamento ID:', ag.id);
+            
             const li = document.createElement('li');
             li.dataset.id = ag.id;
             li.style.background = 'var(--dark-black)';
@@ -269,6 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div><strong>Serviço:</strong> ${ag.servicos}</div>
                         <div><strong>Data:</strong> ${dataFormatada}</div>
                         <div><strong>Horário:</strong> ${ag.horario}</div>
+                        <div style="font-size: 0.8em; color: #666;">ID: ${ag.id}</div>
                     </div>
                 </div>
                 <input type="checkbox" class="cancel-checkbox" style="width: 20px; height: 20px; cursor: pointer;">
